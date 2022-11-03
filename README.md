@@ -1,2 +1,139 @@
 # cicd-docker-wordpress-pipeline
-Within this project we will be building and deploying a Wordpress application using a Jenkins CICD Pipeline and Docker acting as the application container 
+Within this project we will be building and deploying a [Wordpress](https://wordpress.org/) application using a [Jenkins](https://www.jenkins.io/) CICD Pipeline and [Docker](https://www.docker.com/) acting as the application container. 
+
+
+## Architecture
+This architecture displays the Pipeline Checkout, Build, Test, Push, and Deployment process.
+
+ENTER ARCHITECTURE IMAGE
+
+## Prerequisites
+* Docker installation - [steps](https://docs.docker.com/engine/install/)
+* Docker-Compose setup - [steps](https://docs.docker.com/compose/)
+* Virtualbox installation - [steps](https://www.virtualbox.org/wiki/Downloads) 
+
+## Build Process
+This section details the steps required to Build, Test, Push and Deploy the Wordpress application via Docker using a Jenkins CI/CD Pipeline.
+
+## Install Jenkins
+###   1. Clone the Git Repository
+      sudo yum install git -y 
+      cd /home
+      git clone https://github.com/BJWRD/cicd-docker-wordpress-pipeline
+      cd cicd-docker-wordpress-pipeline/jenkins
+      
+###   2. Run Jenkins Container
+Before we begin the Jenkins Installation, we need to ensure that Docker and Docker-Compose has been installed on the VM you are using. Please follow the steps within the 'Prerequisites' section to get started.
+
+Once Docker and Docker-Compose has been installed, execute the following Docker-Compose command to start out Jenkins container in detatched mode. This will host our Jenkins Pipeline.
+
+      docker-compose up -d
+      
+###   3. Unlocking Jenkins
+After running the container you should be able to access the Jenkins application via web browser using ```http://localhost:8080``` or ```http://<host_ip>:8080```.
+
+Initially you will notice that you are presented with a 'Unlock Jenkins' screen. To retrieve the requested 'Administrator password' you will need to enter the following docker command below to view the container logs and locate the password -
+      
+      docker logs <containerID>
+
+Example:
+
+<img width="656" alt="image" src="https://user-images.githubusercontent.com/83971386/195887709-16190167-11f1-405a-adf5-6e2537b0d7ae.png">
+
+Once retrieved, copy and paste the password into the 'Administrator password' field -
+
+<img width="848" alt="image" src="https://user-images.githubusercontent.com/83971386/195887952-7930b373-175c-4d99-81d6-31187fc86807.png">
+
+###   4. Customize Jenkins
+Select 'Install suggested plugins' and wait for the completed installation -
+
+<img width="871" alt="image" src="https://user-images.githubusercontent.com/83971386/195888092-df15273c-bb37-4534-8af5-05bea6a46e3e.png">
+
+Note: In the instance all of the plugins fail, you may need to enter the following commands to ensure a HTTP connection is established rather than HTTPS when pulling the Jenkins plugins -
+
+      docker exec -it <containerID> bash
+      sed -i 's/https/http/g' /var/jenkins_home/hudson.model.UpdateCenter.xml 
+ 
+ Example:
+ 
+<img width="704" alt="image" src="https://user-images.githubusercontent.com/83971386/195888177-aad8e0a2-8aa5-41ed-b440-6a039e70244f.png">
+
+###   5. Creating Jenkins Admin User
+You will then be presented with the following 'Create First Admin User' screen, enter details relevant to yourself and select 'Continue'.
+
+<img width="781" alt="image" src="https://user-images.githubusercontent.com/83971386/195888296-ab95b2c2-dfce-4dc2-b50d-69b861c9bffe.png">
+
+## Install Docker Pipeline Plugin 
+From the Jenkins Dashboard, select the 'Manage Jenkins' option on the left-hand side, followed by 'Manage Plugins' and then the 'Available Plugins' widget.
+
+Within the Search field, enter 'Docker Pipeline' and select the 'Install without restart'button -
+
+<img width="731" alt="image" src="https://user-images.githubusercontent.com/83971386/195888404-2d7a605d-8bec-4e0b-9c3c-819ddcbf55b1.png">
+
+<img width="371" alt="image" src="https://user-images.githubusercontent.com/83971386/195888471-8d6fcb01-742b-46cd-8bdb-f3549ee1b3d9.png">
+
+## Adding Credentials
+###   1. Adding Docker Hub Credentials
+Before we begin with the Pipeline creation, we will need to add our Docker Hub and Git credentials to our Jenkins profile.
+
+Select 'Manage Jenkins' -
+
+<img width="199" alt="image" src="https://user-images.githubusercontent.com/83971386/195980344-fe6f3028-c6b8-4cb1-860e-ab23c5c40356.png">
+
+Followed by 'Manage Credentials' - 
+
+<img width="636" alt="image" src="https://user-images.githubusercontent.com/83971386/195980368-bb7bb47c-8cd3-4206-a55e-cd642a133372.png">
+
+Select the 'Global' hyperlink -
+
+<img width="460" alt="image" src="https://user-images.githubusercontent.com/83971386/195980385-58b72a3f-ef3a-41cc-b18d-4b3786f5d5ce.png">
+
+And then click on 'Add Credentials', from here you can populate the following screen with your Docker Hub login credentials and save -
+
+<img width="1213" alt="image" src="https://user-images.githubusercontent.com/83971386/195980417-df538493-b935-4331-9533-cdac898a1be7.png">
+
+Example:
+<img width="1218" alt="image" src="https://user-images.githubusercontent.com/83971386/195980445-ae882dca-9f39-4c1f-8149-87f4194be0fb.png">
+
+## Create a Jenkins pipeline
+Within the Jenkins Dashboard select the 'New Item' option on the left-hand side, followed by 'Create a Job' -
+
+<img width="223" alt="1 - New Item" src="https://user-images.githubusercontent.com/83971386/197384409-4d65faf6-31fb-4bfe-bb75-00ed80b97454.png">
+
+You will then be presented with multiple items which can be created. We will need to enter an item name, followed by the Pipeline selection -
+
+<img width="1147" alt="2 - pipeline" src="https://user-images.githubusercontent.com/83971386/197384404-194b3c1d-7942-4451-b797-1b0462e678f7.png">
+
+Scroll down to the 'Pipeline' section and select the following Pipeline definition and copy and paste the Jenkinsfile contents within the Script field -
+
+   UPDATE WITH PIPELINE CODE
+
+ENTER IMAGE
+
+Click 'Save' with the 'Groovy Sandbox' tickbox selected.
+
+NOTE: if your Jenkinsfile exists within your GitHub repo, you can also select the following SCM definition which saves you from copying and pasting the contents within the 'Pipeline Script' field -
+
+ENTER IMAGE
+
+## Deploy Wordpress using Jenkins Pipeline
+Now we have a created Pipeline, we can finally select 'Build Now' to set the Pipeline build process in motion -
+
+ENTER IMAGE
+
+ENTER IMAGE
+
+The Pipeline has successfully gone through the build, test, push and deployment phases and the web application should now be accessible -
+
+      curl http://<IPAddress>:Port
+Or
+
+WEB BROWSER IMAGE
+
+## List of tools/services used
+* [Jenkins](https://www.jenkins.io/)
+* [Docker](https://www.docker.com/)
+* [Dockerfile](https://docs.docker.com/engine/reference/builder/)
+* [Docker Hub](https://hub.docker.com/)
+* [Wordpress](https://wordpress.org/)
+* [Draw.io](https://www.draw.io/index.html)
