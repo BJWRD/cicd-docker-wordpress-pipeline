@@ -11,16 +11,28 @@ ENTER ARCHITECTURE IMAGE
 * Docker installation - [steps](https://docs.docker.com/engine/install/)
 * Docker-Compose setup - [steps](https://docs.docker.com/compose/)
 * Virtualbox installation - [steps](https://www.virtualbox.org/wiki/Downloads) 
+* Trivy installation - [steps](https://aquasecurity.github.io/trivy/v0.34/getting-started/installation/) or follow the instructions below.
 
 ## Build Process
 This section details the steps required to Build, Test, Push and Deploy the Wordpress application via Docker using a Jenkins CI/CD Pipeline.
 
-## Install Jenkins
-###   1. Clone the Git Repository
+## Install Trivy
+### 1. Clone the Git Repository
       sudo yum install git -y 
       cd /home
       git clone https://github.com/BJWRD/cicd-docker-wordpress-pipeline
-      cd cicd-docker-wordpress-pipeline/jenkins
+      cd cicd-docker-wordpress-pipeline
+      
+### 2. Change file permissions
+      chmod 700 trivy.sh
+      
+### 3. Execute the Trivy Script (This will install the trivy software)
+      ./trivy.sh
+      trivy -v
+
+## Install Jenkins
+###   1. Change directory to Jenkins 
+      cd jenkins
       
 ###   2. Run Jenkins Container
 Before we begin the Jenkins Installation, we need to ensure that Docker and Docker-Compose has been installed on the VM you are using. Please follow the steps within the 'Prerequisites' section to get started.
@@ -131,9 +143,11 @@ Or
 WEB BROWSER IMAGE
 
 ## List of tools/services used
+* [Trivy](https://aquasecurity.github.io/trivy/v0.34/getting-started/installation/)
 * [Jenkins](https://www.jenkins.io/)
 * [Docker](https://www.docker.com/)
 * [Dockerfile](https://docs.docker.com/engine/reference/builder/)
 * [Docker Hub](https://hub.docker.com/)
 * [Wordpress](https://wordpress.org/)
+* [MySQL](https://www.mysql.com/)
 * [Draw.io](https://www.draw.io/index.html)
