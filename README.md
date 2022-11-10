@@ -5,7 +5,7 @@ Within this project we will be building and deploying a [Wordpress](https://word
 ## Architecture
 This architecture displays the Pipeline Checkout, Build, Test, Push, and Deployment process.
 
-ENTER ARCHITECTURE IMAGE
+![image](https://user-images.githubusercontent.com/83971386/201048278-cd83be08-7417-4aa4-94c5-1c62daf20724.png)
 
 ## Prerequisites
 * Docker installation - [steps](https://docs.docker.com/engine/install/)
