@@ -38,9 +38,6 @@ pipeline {
           echo 'Scanning Image...'
           sh 'trivy image $DOCKER_HUB_REPO_WORDPRESS:latest --severity MEDIUM,HIGH,CRITICAL > wordpress_vulnerability_output'
           sh 'trivy image $DOCKER_HUB_REPO_MYSQL:latest --severity MEDIUM,HIGH,CRITICAL > mysql_vulnerability_output'
-          sh 'docker image rm $DOCKER_HUB_REPO_WORDPRESS:latest'
-          sh 'docker image rm $DOCKER_HUB_REPO_MYSQL:latest'
-          sh 'docker system prune'
           }
         }
 
