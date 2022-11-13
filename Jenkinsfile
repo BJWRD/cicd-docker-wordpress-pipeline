@@ -2,8 +2,10 @@ pipeline {
   agent any
 
   environment {
-    DOCKER_HUB_REPO = "bjwrd/docker-wordpress"
-    CONTAINER_NAME = "docker-wordpress"
+    DOCKER_HUB_REPO_WORDPRESS = "bjwrd/wordpress"
+    DOCKER_HUB_REPO_MYSQL = "bjwrd/mysql"
+    CONTAINER_NAME_WORDPRESS = "wordpress"
+    CONTAINER_NAME_MYSQL = "mysql"
   }
   
   stages {
@@ -13,45 +15,42 @@ pipeline {
             }
     }
 
-    
-    stage('Build') {
-      steps {
-        script {
-         echo 'Building Image...'
-         sh 'docker image build -t $DOCKER_HUB_REPO:latest .'
-        }
-      }
-    }
-
     stage('Test Container') {
         steps {
+          script {
             echo 'Testing Container...'
-            sh 'docker stop $CONTAINER_NAME || true'
-            sh 'docker rm $CONTAINER_NAME || true'
-            sh 'docker run -d --name $CONTAINER_NAME $DOCKER_HUB_REPO'
-            sh 'docker stop $CONTAINER_NAME || true'
-            sh 'docker rm $CONTAINER_NAME || true'
-            sh 'docker system prune'
+            withDockerRegistry([ credentialsId: "dockerhublogin", url: "" ]) {
+            sh 'docker pull $DOCKER_HUB_REPO_WORDPRESS:latest'
+            sh 'docker pull $DOCKER_HUB_REPO_MYSQL:latest'
+            sh 'docker run -d --name $CONTAINER_NAME_WORDPRESS $DOCKER_HUB_REPO_WORDPRESS'
+            sh 'docker run -d --name $CONTAINER_NAME_MYSQL $DOCKER_HUB_REPO_MYSQL'
+            sh 'docker stop $CONTAINER_NAME_WORDPRESS || true'
+            sh 'docker stop $CONTAINER_NAME_MYSQL || true'
+            sh 'docker rm $CONTAINER_NAME_WORDPRESS || true'
+            sh 'docker rm $CONTAINER_NAME_MYSQL || true'
+            }
+          }
         }
     }
+
+    stage('Scan Image') {
+      steps {
+          echo 'Scanning Image...'
+          sh 'trivy image $DOCKER_HUB_REPO_WORDPRESS:latest --severity MEDIUM,HIGH,CRITICAL > wordpress_vulnerability_output'
+          sh 'trivy image $DOCKER_HUB_REPO_MYSQL:latest --severity MEDIUM,HIGH,CRITICAL > mysql_vulnerability_output'
+          sh 'docker image rm $DOCKER_HUB_REPO_WORDPRESS:latest'
+          sh 'docker image rm $DOCKER_HUB_REPO_MYSQL:latest'
+          sh 'docker system prune'
+          }
+        }
 
     stage('Push') {
       steps {
         script {
           echo 'Pushing Image...'
           withDockerRegistry([ credentialsId: "dockerhublogin", url: "" ]) {
-          sh 'docker push $DOCKER_HUB_REPO:latest'
-          }
-        }
-      }
-    }
-
-       stage('Test Image') {
-      steps {
-        script {
-          echo 'Testing Image...'
-          withDockerRegistry([ credentialsId: "dockerhublogin", url: "" ]) {
-          sh 'docker scan $DOCKER_HUB_REPO:latest'
+          sh 'docker push $DOCKER_HUB_REPO_WORDPRESS:latest'
+          sh 'docker push $DOCKER_HUB_REPO_MYSQL:latest'
           }
         }
       }
@@ -63,8 +62,10 @@ pipeline {
         script {
           echo 'Testing Image...'
           withDockerRegistry([ credentialsId: "dockerhublogin", url: "" ]) {
-          sh 'docker pull $DOCKER_HUB_REPO:latest'
-          sh 'docker run -d bjwrd/docker-wordpress'
+          sh 'docker pull $DOCKER_HUB_REPO_WORDPRESS:latest'
+          sh 'docker run -d bjwrd/wordpress'
+          sh 'docker pull $DOCKER_HUB_REPO_MYSQL:latest'
+          sh 'docker run -d bjwrd/mysql'
           }
         }
       }
